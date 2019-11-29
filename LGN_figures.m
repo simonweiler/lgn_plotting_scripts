@@ -5,7 +5,7 @@
     %uipickfiles
  
 %% Load LGN structure 
-str_LGN     = 'C:\Users\Simon Weiler\Documents\Projects_PhD\LGN project\';
+str_LGN     = 'C:\Users\Simon-localadmin\Documents\MargrieLab\PhDprojects\LGN';
 folder_list = uipickfiles('FilterSpec',str_LGN);
 load(char(folder_list));
 data=data_mod;
@@ -39,8 +39,6 @@ md_n=find(md==0);
 [r_nm3 ~]=intersect(no_md3,c_red);[i_nm3 ~]=intersect(no_md3,i_red);
 [r_nm4 ~]=intersect(no_md4,c_red);[i_nm4 ~]=intersect(no_md4,i_red);
 [r_nm5 ~]=intersect(no_md5,c_red);[i_nm5 ~]=intersect(no_md5,i_red);
-%% Sequential photostimulation prevents crosstalk
-
 %% Observed response types
 %Choose different example cells for the different category 
 cat1=13; cat2=1; cat3=22; cat4=6 ; cat5=4;
@@ -230,6 +228,68 @@ yticklabels({'0','20','40','60','80'});ylabel('Fraction of cells (%)');xlabel('O
 
 % histogram([data(ocat3).ODI_AMPA_step],10,'FaceColor','k');hold on;histogram([data(ocat3).ODI_NMDA_step],10,'FaceColor','w');box off;xlabel('ODI');ylabel('Counts');
 % ylim([0 50]);yticks([0:10:50]);legend('AMPA', 'NMDA');legend boxoff;
+
+%% Sequential photostimulation prevents crosstalk
+%ChrimsonR only control
+% 1 Blue ramp                                       establish blue threshold
+% 2 red ramp no blue                           red should elicit a response but is then killed
+% 3 red ramp with blue                         red should elicit a response but is not kiled (compare to 2)
+% 4 double rep no blue                         This is the quantification of red rundown w/o blue
+% 5 double rep with blue                      compare this to 4.
+% 6 red ramp 10 no blue                       this ramp has 10ms red, no blue (response dies)
+% 7 red ramp 10 with blue                     this ramp has 10ms red, 50ms blue (compare to 6)
+% 8 red ramp 1 no blue                          this ramp has 1ms red, no blue (response dies)
+% 9 red ramp 1 with blue                    this ramp has 1ms red, 50ms blue (compare to 8)
+% 10 minimal red with blue                no explanation needed... should get minimal stim.
+% 11 minimal red no blue                   no explanation needed, red should die, same power as 10
+% 12 double rep with blue                 just to reset
+% 13 minimal blue only                      using same irradiance for blue as used for red in 10
+% 14 blue delay                                  250 red, 50 blue, window betwen red and blue for crosstalk depletion
+% 15 red time                                      How long does the red need to be to get proper crosstalk depletion
+
+str_LGN     = 'C:\Users\Simon-localadmin\Documents\MargrieLab\PhDprojects\LGN\AnalyzedData\';
+folder_list = uipickfiles('FilterSpec',str_LGN);
+load(char(folder_list));
+%% 
+%Example trace for sequential photostimulation works in red only expressing
+%cells
+cellnr=4;
+if LGN(cellnr).experimentator=='SW'
+    srF=1;
+else LGN(cellnr).experimentator=='MF'  
+    srF=2;
+end
+temp_size=size(LGN(cellnr).step_red.ephys_traces_70(:,:,:),3);
+blue_o=LGN(cellnr).step_red.ephys_traces_70(:,11,1);
+blue_red=LGN(cellnr).step_red.ephys_traces_70(:,9,3);
+%Plotting
+fig8= figure;set(fig8, 'Name', 'Step protocol');set(fig8, 'Position', [200, 100, 200, 400]);set(gcf,'color','w');
+subplot(2,1,1);
+ov_maxo=max(blue_o);
+plot(blue_o,'Color','k','LineWidth',1);box off;axis off;
+%hold on; x1= redpeak_start*srF;x2=redpeak_end*srF;p1=plot([x1 x2],[ov_maxo ov_maxo],'-','Color','r','LineWidth',i_l);
+hold on; x1= bluepeak_start*srF;x2=bluepeak_end*srF; hold on;p1=plot([x1 x2],[ov_maxo*5 ov_maxo*5],'-','Color','b','LineWidth',i_l);
+subplot(2,1,2);
+ov_maxo=max(blue_red);
+plot(blue_red,'Color','k','LineWidth',1);box off;axis off;
+hold on; x1= redpeak_start*srF;x2=redpeak_end*srF;p1=plot([x1 x2],[ov_maxo*30 ov_maxo*30],'-','Color','r','LineWidth',i_l);
+hold on; x1= bluepeak_start*srF;x2=bluepeak_end*srF; hold on;p1=plot([x1 x2],[ov_maxo*30 ov_maxo*30],'-','Color','b','LineWidth',i_l);
+ov_min=min(blue_red);
+%scale barx
+hold on;x1= 900*srF;x2=1000*srF;p1=plot([x1 x2],[ov_min*1.5 ov_min*1.5],'-','Color','k','LineWidth',2);
+%scale bary
+hold on;y2= ov_min+scale_y;y1=ov_min;p1=plot([x2 x2],[y1*1.5 y2*1.5],'-','Color','k','LineWidth',2); 
+%
+%% Compare red ramp with blue and no blue, red varies from 250, 10 and 1 ms, blue is always 50 ms
+for m=1:length(LGN)
+red250b=LGN(m).step_red.ephys_traces_70(:,:,3);
+cat_bluesteps_a=temp_cat(:);
+red10b=LGN(m).step_red.ephys_traces_70(:,:,7);
+red1b=LGN(m).step_red.ephys_traces_70(:,:,9);
+red250nb=LGN(m).step_red.ephys_traces_70(:,:,2);
+red10nb=LGN(m).step_red.ephys_traces_70(:,:,6);
+red1bn=LGN(m).step_red.ephys_traces_70(:,:,8);
+end
 %% Step protocol visualization prep
  rm={r_nm1 r_nm2 r_nm3 r_nm4 r_nm5};
  im={i_nm1 i_nm2 i_nm3 i_nm4 i_nm5};
@@ -539,6 +599,7 @@ boxplot(abs(con)/1000,grp,'Colors','k','OutlierSize',0.001);
 box off;xticklabels({'DE','NDE'});ylabel('Peak amplitude (nA)');
 yticks([0:1:4]);
 
+%% 
 
                        
                         
