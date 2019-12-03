@@ -253,6 +253,7 @@ load(char(folder_list));
 %% 
 %Example trace for sequential photostimulation works in red only expressing
 %cells
+%good examples= 4, 7, 12, 16 maybe 1
 cellnr=4;
 if LGN(cellnr).experimentator=='SW'
     srF=1;
@@ -281,15 +282,184 @@ hold on;x1= 900*srF;x2=1000*srF;p1=plot([x1 x2],[ov_min*1.5 ov_min*1.5],'-','Col
 hold on;y2= ov_min+scale_y;y1=ov_min;p1=plot([x2 x2],[y1*1.5 y2*1.5],'-','Color','k','LineWidth',2); 
 %
 %% Compare red ramp with blue and no blue, red varies from 250, 10 and 1 ms, blue is always 50 ms
+srF=2;
 for m=1:length(LGN)
-red250b=LGN(m).step_red.ephys_traces_70(:,:,3);
-cat_bluesteps_a=temp_cat(:);
-red10b=LGN(m).step_red.ephys_traces_70(:,:,7);
-red1b=LGN(m).step_red.ephys_traces_70(:,:,9);
-red250nb=LGN(m).step_red.ephys_traces_70(:,:,2);
-red10nb=LGN(m).step_red.ephys_traces_70(:,:,6);
-red1bn=LGN(m).step_red.ephys_traces_70(:,:,8);
+try
+temp=LGN(m).step_red.ephys_traces_70(:,:,3);
+red250b(:,m)=temp(:);
+peak250b(:,m)=LGN(m).step_red.neg_peak1(3,:);
+irr250b_r(:,m)=LGN(m).step_red.neg_irr_red(3,:);  
+irr250b_b(:,m)=LGN(m).step_blue.neg_irr_blue(3,:); 
 end
+%10ms
+try
+temp2=LGN(m).step_red.ephys_traces_70(:,:,5);
+red10b(:,m)=temp2(:);
+peak10b(:,m)=LGN(m).step_red.neg_peak1(5,:);
+irr10b_r(:,m)=(104.1*mean(LGN(m).step_red.bs_photodiodetraces_70(102*srF:105*srF,:,5))-3.467)/100;
+irr10b_b(:,m)=(679.2*mean(LGN(m).step_red.bs_photodiodetraces_70(125*srF:150*srF,:,5))-26.82)/100;
+end
+try
+temp3=LGN(m).step_red.ephys_traces_70(:,:,7);
+red1b(:,m)=temp3(:);
+peak1b(:,m)=LGN(m).step_red.neg_peak1(7,:);
+irr1b_r(:,m)=(104.1*mean(LGN(m).step_red.bs_photodiodetraces_70(101*srF:101.5*srF,:,7))-3.467)/100;
+irr1b_b(:,m)=(679.2*mean(LGN(m).step_red.bs_photodiodetraces_70(125*srF:150*srF,:,7))-26.82)/100;
+ end
+end
+%% 
+for m=1:length(LGN)
+try
+temp=LGN(m).step_red.ephys_traces_70(:,:,2);
+red250bn(:,m)=temp(:);
+peak250bn(:,m)=LGN(m).step_red.neg_peak1(2,:);
+irr250bn_r(:,m)=LGN(m).step_red.neg_irr_red(2,:);  
+irr250bn_b(:,m)=LGN(m).step_blue.neg_irr_blue(2,:);
+end
+try
+temp2=LGN(m).step_red.ephys_traces_70(:,:,4);
+red10bn(:,m)=temp2(:);
+peak10bn(:,m)=LGN(m).step_red.neg_peak1(4,:);
+irr10bn_r(:,m)=(104.1*mean(LGN(m).step_red.bs_photodiodetraces_70(102*srF:105*srF,:,4))-3.467)/100;
+irr10bn_b(:,m)=(679.2*mean(LGN(m).step_red.bs_photodiodetraces_70(125*srF:150*srF,:,4))-26.82)/100;
+end
+try
+temp3=LGN(m).step_red.ephys_traces_70(:,:,6);
+red1bn(:,m)=temp3(:);
+peak1bn(:,m)=LGN(m).step_red.neg_peak1(6,:);
+irr1bn_r(:,m)=(104.1*mean(LGN(m).step_red.bs_photodiodetraces_70(101*srF:101.5*srF,:,6))-3.467)/100; 
+irr1bn_b(:,m)=(679.2*mean(LGN(m).step_red.bs_photodiodetraces_70(125*srF:150*srF,:,6))-26.82)/100;
+ end
+end
+%% 
+peakn_1=peak1b(:,[find(peak1b(1,:)~=0)])./min(peak1b(:,[find(peak1b(1,:)~=0)]));
+peakn_10=peak10b(:,[find(peak10b(1,:)~=0)])./min(peak10b(:,[find(peak10b(1,:)~=0)]));
+peakn_250=peak250b(:,[find(peak250b(1,:)~=0)])./min(peak250b(:,[find(peak250b(1,:)~=0)]));
+
+peakn_1nb=peak1bn(:,[find(peak1bn(1,:)~=0)])./min(peak1bn(:,[find(peak1bn(1,:)~=0)]));
+peakn_10nb=peak10bn(:,[find(peak10bn(1,:)~=0)])./min(peak10bn(:,[find(peak10bn(1,:)~=0)]));
+peakn_250nb=peak250bn(:,[find(peak250bn(1,:)~=0)])./min(peak250bn(:,[find(peak250bn(1,:)~=0)]));
+%% Plotting example concatenated traces with blue
+cell_ex=2;
+ trac_ex=[red250b(:,cell_ex) red10b(:,cell_ex) red1b(:,cell_ex)];
+ irr_exr=[irr250b_r(:,cell_ex) irr10b_r(:,cell_ex) irr1b_r(:,cell_ex)];
+ irr_exb=[irr250b_b(:,cell_ex) irr10b_b(:,cell_ex) irr1b_b(:,cell_ex)];
+ redpeak_start=100;
+ redpeak_end=[350 110 101];
+bluepeak_end=[400 160 151];
+tex={'red 250ms','red 10ms','red 1ms'};
+%% Plotting
+for j=1:3
+fig10= figure;set(fig10, 'Name', 'Step protocol');set(fig10, 'Position', [200, 100, 400, 300]);set(gcf,'color','w');
+subplot(2,1,1);
+plot(trac_ex(:,j),'Color','k','LineWidth',1);box off;axis off;%ylim([min(cat_bluesteps_a) abs(min(cat_bluesteps_a))/2]);
+hold on; title(tex{j});
+co=[0:1:10];
+hold on;
+for i=1:11
+x1(i)=redpeak_end(j)*srF+length(trac_ex(:,j))/11*co(i);
+x2(i)=bluepeak_end(j)*srF+length(trac_ex(:,j))/11*co(i);
+p1=plot([x1(i) x2(i)],[abs(min(trac_ex(:,j)))/2-(abs(min(trac_ex(:,j)))/2)/3 abs(min(trac_ex(:,j)))/2-(abs(min(trac_ex(:,j)))/2)/3],'-','Color','b','LineWidth',4);
+xr1(i)=redpeak_start*srF+length(trac_ex(:,j))/11*co(i);
+xr2(i)=redpeak_end(j)*srF+length(trac_ex(:,j))/11*co(i);
+p2=plot([xr1(i) xr2(i)],[abs(min(trac_ex(:,j)))/2-(abs(min(trac_ex(:,j)))/2)/3 abs(min(trac_ex(:,j)))/2-(abs(min(trac_ex(:,j)))/2)/3],'-','Color','r','LineWidth',4);
+end
+subplot(2,1,2);
+scatter(xr1,irr_exr(:,j)','sr');axis off;
+hold on;
+scatter(x1,irr_exb(:,j)','sb');axis off;
+hold on; title('with blue');
+%'-or','MarkerSize',5,'MarkerEdgeColor','r','MarkerFaceColor','r');axis off
+end
+%% 
+cell_ex=2;
+ trac_ex=[red250bn(:,cell_ex) red10bn(:,cell_ex) red1bn(:,cell_ex)];
+ irr_exr=[irr250bn_r(:,cell_ex) irr10bn_r(:,cell_ex) irr1bn_r(:,cell_ex)];
+ irr_exb=[irr250bn_b(:,cell_ex) irr10bn_b(:,cell_ex) irr1bn_b(:,cell_ex)];
+ redpeak_start=100;
+ redpeak_end=[350 110 101];
+bluepeak_end=[400 160 151];
+%% Plotting
+for j=1:3
+fig10= figure;set(fig10, 'Name', 'Step protocol');set(fig10, 'Position', [200, 100, 400, 300]);set(gcf,'color','w');
+hold on; title('without blue');
+subplot(2,1,1);
+plot(trac_ex(:,j),'Color','k','LineWidth',1);box off;axis off;%ylim([min(cat_bluesteps_a) abs(min(cat_bluesteps_a))/2]);
+hold on;title(tex{j});
+co=[0:1:10];
+hold on;
+for i=1:11
+x1(i)=redpeak_end(j)*srF+length(trac_ex(:,j))/11*co(i);
+x2(i)=bluepeak_end(j)*srF+length(trac_ex(:,j))/11*co(i);
+%p1=plot([x1(i) x2(i)],[abs(min(trac_ex(:,j)))/2-(abs(min(trac_ex(:,j)))/2)/3 abs(min(trac_ex(:,j)))/2-(abs(min(trac_ex(:,j)))/2)/3],'-','Color','b','LineWidth',4);
+xr1(i)=redpeak_start*srF+length(trac_ex(:,j))/11*co(i);
+xr2(i)=redpeak_end(j)*srF+length(trac_ex(:,j))/11*co(i);
+p2=plot([xr1(i) xr2(i)],[abs(min(trac_ex(:,j)))/2-(abs(min(trac_ex(:,j)))/2)/3 abs(min(trac_ex(:,j)))/2-(abs(min(trac_ex(:,j)))/2)/3],'-','Color','r','LineWidth',4);
+end
+subplot(2,1,2)
+scatter(xr1,irr_exr(:,j)','sr');axis off;
+hold on;
+scatter(x1,irr_exb(:,j)','sb');axis off;
+hold on; title('without blue');
+%'-or','MarkerSize',5,'MarkerEdgeColor','r','MarkerFaceColor','r');axis off
+end
+
+%% One plot for an example cell
+
+ov_min=min(min(trac_ex));
+ov_max=max(max(trac_ex));
+%% 
+fig11= figure;set(fig11, 'Name', 'Step protocol');set(fig11, 'Position', [200, 100, 800, 400]);set(gcf,'color','w');
+for j=1:3
+hold on;
+subplot(4,1,j);
+plot(trac_ex(:,j),'Color','k','LineWidth',1);box off;axis off;%ylim([min(cat_bluesteps_a) abs(min(cat_bluesteps_a))/2]);
+end
+hold on;
+subplot(4,1,4);
+scatter(xr1,irr_exr(:,3)','sr','MarkerFaceColor','r');axis off;
+hold on;
+scatter(x1,irr_exb(:,3)','sb','MarkerFaceColor','b');axis off;
+
+%% 
+fig12= figure;set(fig12, 'Name', 'Step protocol');set(fig12, 'Position', [200, 100, 800, 400]);set(gcf,'color','w');
+for j=1:3
+hold on;
+subplot(4,1,j);
+
+plot(trac_ex(:,j),'Color','k','LineWidth',1);box off;axis off;%ylim([min(cat_bluesteps_a) abs(min(cat_bluesteps_a))/2]);
+title(tex{j});
+end
+hold on;
+subplot(4,1,4);
+scatter(xr1,irr_exr(:,3)','sr','MarkerFaceColor','r');axis off;
+
+
+%% Plotting the ramps (250 , 10 , 1 ms red) with and without blue (50 ms)
+fig9= figure;set(fig9, 'Name', 'Step protocol');set(fig9, 'Position', [200, 100, 600, 300]);set(gcf,'color','w');
+subplot(1,2,1);
+hold on;title('with blue 50 ms','Color','b');
+errorbar(nanmean(peakn_1,2),nanstd(peakn_1,1,2)/sqrt(size(peakn_1,2)),'--ob','MarkerSize',5,...
+    'MarkerEdgeColor','k','MarkerFaceColor','r');hold on;
+hold on;
+errorbar(nanmean(peakn_10,2),nanstd(peakn_10,1,2)/sqrt(size(peakn_10,2)),'-^b','MarkerSize',5,...
+    'MarkerEdgeColor','k','MarkerFaceColor','r');hold on;
+errorbar(nanmean(peakn_250,2),nanstd(peakn_250,1,2)/sqrt(size(peakn_250,2)),'--sb','MarkerSize',6,...
+    'MarkerEdgeColor','k','MarkerFaceColor','r');hold on;box off;ylabel('Peak normalized');xlabel('Step number');xticks([1:1:11]);
+legend('1ms','10ms','250ms','Location','southeast');legend boxoff
+subplot(1,2,2);
+hold on;
+title('without blue');
+errorbar(nanmean(peakn_1nb,2),nanstd(peakn_1nb,1,2)/sqrt(size(peakn_1nb,2)),'--ok','MarkerSize',5,...
+    'MarkerEdgeColor','k','MarkerFaceColor','r');hold on;
+hold on;
+errorbar(nanmean(peakn_10nb,2),nanstd(peakn_10nb,1,2)/sqrt(size(peakn_10nb,2)),'--^k','MarkerSize',5,...
+    'MarkerEdgeColor','k','MarkerFaceColor','r');hold on;
+errorbar(nanmean(peakn_250nb,2),nanstd(peakn_250nb,1,2)/sqrt(size(peakn_250nb,2)),'--sk','MarkerSize',6,...
+    'MarkerEdgeColor','k','MarkerFaceColor','r');hold on;box off;xlabel('Step number');xticks([1:1:11]);
+legend('1ms','10ms','250ms','Location','southeast');legend boxoff
+%% 
+
 %% Step protocol visualization prep
  rm={r_nm1 r_nm2 r_nm3 r_nm4 r_nm5};
  im={i_nm1 i_nm2 i_nm3 i_nm4 i_nm5};
